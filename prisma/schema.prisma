@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int        @id @default(autoincrement())
+  portalId           Int
+  refId              Int?
+  email              String     @unique
+  emailVerifiedAt    DateTime?
+  password           String
+  rememberToken      String?    @default("")
+  isActive           Boolean    @default(true)
+  mustChangePassword Boolean    @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  deletedAt          DateTime?
+  createdBy          Int?
+  updatedBy          Int?
+  deletedBy          Int?
+  Bookmark           Bookmark[]
+
+  @@index([portalId])
+  @@index([createdBy])
+  @@index([updatedBy])
+  @@index([deletedBy])
+}
+
+model Portal {
+  id   Int    @id @default(autoincrement())
+  name String
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String?
+  description String?
+  link        String?
+
+  userID Int
+  user   User @relation(fields: [userID], references: [id])
+
+  @@map("bookmarks")
+}
+
+model Client {
+  id               Int       @id @default(autoincrement())
+  refNumber        String
+  name             String
+  postCode         String
+  status           String
+  registrationDate DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime? @map("deleted_at") // Nullable for soft deletion
+
+  @@map("clients") // This maps the model to the 'clients' table
+}
